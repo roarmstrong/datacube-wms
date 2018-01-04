@@ -750,10 +750,14 @@ layer_cfg = [
                                 "NPV": 1.0
                             }
                         },
-                        "pq_mask_flags": {
-                            "cloud_acca": "no_cloud",
-                            "cloud_fmask": "no_cloud",
-                        },
+                        "pq_masks": [
+                            {
+                                "flags": {
+                                    "cloud_acca": "no_cloud",
+                                    "cloud_fmask": "no_cloud",
+                                },
+                            },
+                        ],
                         "scale_factor": 0.39
                     }
                 ],
