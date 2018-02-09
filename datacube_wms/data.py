@@ -67,8 +67,10 @@ class RGBTileGenerator(TileGenerator):
         query = datacube.api.query.Query(product=prod_name, geopolygon=self._geobox.extent, time=time)
         datasets = index.datasets.search_eager(**query.search_terms)
         datasets.sort(key=lambda d: d.center_time)
+        # Got all matching datasets
         to_load = []
         if point:
+            # Interested in a single point (i.e. GetFeatureInfo)
             dataset_iter = iter(datasets)
             for dataset in dataset_iter:
                 if mask:
@@ -79,25 +81,30 @@ class RGBTileGenerator(TileGenerator):
                 if compare_geometry.contains(point):
                     to_load.append(dataset)
             return to_load
+        # Interested in a larger tile (i.e. GetMap)
+        if not mask and self._product.data_manual_merge:
+            return datasets
+        if mask and self._product.pq_manual_merge:
+            return datasets
         dataset_iter = iter(datasets)
         date_index = {}
         for dataset in dataset_iter:
-            if mask and self._product.pq_manual_merge:
-                to_load.append(dataset)
-            else:
-                if dataset.extent.to_crs(self._geobox.crs).intersects(self._geobox.extent):
-                    if dataset.center_time in date_index:
-                        date_index[dataset.center_time].append(dataset)
-                    else:
-                        date_index[dataset.center_time] = [dataset]
+            # Building a date-index of intersecting datasets
+            if dataset.extent.to_crs(self._geobox.crs).intersects(self._geobox.extent):
+                if dataset.center_time in date_index:
+                    date_index[dataset.center_time].append(dataset)
+                else:
+                    date_index[dataset.center_time] = [dataset]
 
-        if mask and self._product.pq_manual_merge:
-            return to_load
-        elif not date_index:
+        if not date_index:
+            # No datasets intersect geobox
             return None
 
         date_extents = {}
         for dt, dt_dss in date_index.items():
+            # Loop over dates in the date index
+
+            # Build up a net extent of all datasets for this date
             geom = None
             for ds in dt_dss:
                 if geom is None:
@@ -105,11 +112,13 @@ class RGBTileGenerator(TileGenerator):
                 else:
                     geom = geom.union(ds.extent.to_crs(self._geobox.crs))
             if geom.contains(self._geobox.extent):
+                # This date fully overs the tile bounding box, just return it.
                 return dt_dss
             date_extents[dt] = geom
 
         dates = date_extents.keys()
 
+        # Sort by size of geometry (probably pointless for square-cropped)
         biggest_geom_first = sorted(dates, key=lambda x: [date_extents[x].area, x], reverse=True)
 
         accum_geom = None
@@ -229,27 +238,35 @@ def get_map(args):
             # Zoomed out to far to properly render data.
             # Construct a polygon which is the union of the extents of the matching datasets.
             extent = None
+            extent_crs = None
             for ds in datasets:
                 if extent:
-                    extent = extent.union(ds.extent)
+                    new_extent = ds.extent
+                    if new_extent.crs != extent_crs:
+                        new_extent = new_extent.to_crs(extent_crs)
+                    extent = extent.union(new_extent)
                 else:
                     extent = ds.extent
+                    extent_crs = extent.crs
             extent = extent.to_crs(geobox.crs)
 
             body = _write_polygon(geobox, extent, product.zoom_fill)
         else:
+            data = tiler.data(datasets, manual_merge=product.data_manual_merge)
             if style.masks:
-                pq_datasets = tiler.datasets(dc.index, mask=True)
-                pq_data = tiler.data(pq_datasets,
+                if product.pq_name == product.name:
+                    pq_data = xarray.Dataset({
+                        product.pq_band: (data[product.pq_band].dims, data[product.pq_band].astype("uint16"))},
+                        coords=data[product.pq_band].coords)
+                    pq_data[product.pq_band].attrs["flags_definition"] = data[product.pq_band].flags_definition
+                else:
+                    pq_datasets = tiler.datasets(dc.index, mask=True)
+                    pq_data = tiler.data(pq_datasets,
                                      mask=True,
                                      manual_merge=product.pq_manual_merge)
             else:
-                pq_datasets = None
                 pq_data = None
-            masks = []
-            data = tiler.data(datasets)
             for band in style.needed_bands:
-                # extent_mask = (data[band] != data[band].attrs['nodata'])
                 extent_mask = product.extent_mask_func(data, band)
 
             if data:
@@ -309,12 +326,17 @@ def _write_polygon(geobox, polygon, zoom_fill):
         data = numpy.zeros([geobox.width, geobox.height], dtype="uint8")
         if not geobox_ext.disjoint(polygon):
             intersection = geobox_ext.intersection(polygon)
-            crs_coords = intersection.json["coordinates"][0]
-            pixel_coords = [~geobox.transform * coords for coords in crs_coords]
-            rs, cs = skimg_polygon([int_trim(c[1], 0, geobox.height - 1) for c in pixel_coords],
-                                   [int_trim(c[0], 0, geobox.width - 1) for c in pixel_coords])
-            data[rs, cs] = 1
-
+            if intersection.type == 'Polygon':
+                coordinates_list = [ intersection.json["coordinates"] ]
+            elif intersection.type == 'MultiPolygon':
+                coordinates_list = intersection.json["coordinates"]
+            else:
+                raise Exception("Unexpected extent/geobox intersection geometry type: %s" % intersection.type)
+            for polygon_coords in coordinates_list:
+                pixel_coords = [ ~geobox.transform * coords for coords in polygon_coords[0] ]
+                rs, cs = skimg_polygon([int_trim(c[1], 0, geobox.height - 1) for c in pixel_coords],
+                                       [int_trim(c[0], 0, geobox.width - 1) for c in pixel_coords])
+                data[rs, cs] = 1
     with MemoryFile() as memfile:
         with memfile.open(driver='PNG',
                           width=geobox.width,
