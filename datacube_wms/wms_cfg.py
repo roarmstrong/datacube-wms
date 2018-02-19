@@ -71,18 +71,18 @@ layer_cfg = [
         "products": [
             {
             # Included as a keyword  for the layer
-                "label": "NBAR-T",
+                "label": "Level 1"
                 # Included as a keyword  for the layer
                 "type": "surface reflectance",
                 # Included as a keyword  for the layer
-                "variant": "terrain corrected",
+                "variant": "Level 1",
                 # The WMS name for the layer
-                "name": "ls8_nbart_albers",
+                "name": "ls8_level1_usgs",
                 # The Datacube name for the associated data product
-                "product_name": "ls8_nbart_albers",
+                "product_name": "ls8_level1_usgs",
                 # The Datacube name for the associated pixel-quality product (optional)
                 # The name of the associated Datacube pixel-quality product
-                "pq_dataset": "ls8_pq_albers",
+                "pq_dataset": "",
                 # The name of the measurement band for the pixel-quality product
                 # (Only required if pq_dataset is set)
                 "pq_band": "pixelquality",
