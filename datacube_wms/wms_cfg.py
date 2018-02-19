@@ -71,7 +71,7 @@ layer_cfg = [
         "products": [
             {
             # Included as a keyword  for the layer
-                "label": "Level 1"
+                "label": "Level 1",
                 # Included as a keyword  for the layer
                 "type": "surface reflectance",
                 # Included as a keyword  for the layer
