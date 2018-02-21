@@ -85,10 +85,10 @@ layer_cfg = [
                 "pq_dataset": "ls8_level1_usgs",
                 # The name of the measurement band for the pixel-quality product
                 # (Only required if pq_dataset is set)
-                'pq_manual_data_merge': True,
-                'data_manual_merge': True,
-                'pq_band': 'quality',
-                'always_fetch_bands': [ 'quality' ],
+                "pq_manual_data_merge": True,
+                "data_manual_merge": True,
+                "pq_band": "quality",
+                "always_fetch_bands": [ "quality" ],
                 # Min zoom factor - sets the zoom level where the cutover from indicative polygons
                 # to actual imagery occurs.
                 "min_zoom_factor": 500.0,
