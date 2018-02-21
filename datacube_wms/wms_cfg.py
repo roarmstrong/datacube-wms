@@ -82,10 +82,13 @@ layer_cfg = [
                 "product_name": "ls8_level1_usgs",
                 # The Datacube name for the associated pixel-quality product (optional)
                 # The name of the associated Datacube pixel-quality product
-                "pq_dataset": "",
+                "pq_dataset": "ls8_level1_usgs",
                 # The name of the measurement band for the pixel-quality product
                 # (Only required if pq_dataset is set)
-                "pq_band": "pixelquality",
+                'pq_manual_data_merge': True,
+                'data_manual_merge': True,
+                'pq_band': 'quality',
+                'always_fetch_bands': [ 'quality' ],
                 # Min zoom factor - sets the zoom level where the cutover from indicative polygons
                 # to actual imagery occurs.
                 "min_zoom_factor": 500.0,
@@ -158,38 +161,9 @@ layer_cfg = [
                         "pq_masks": [
                             {
                                 "flags": {
-                                    "cloud_acca": "no_cloud",
-                                    "cloud_fmask": "no_cloud",
-                                },
-                            },
-                        ],
-                        "scale_range": [6500.0,19000.0]
-                    },
-                    {
-                        "name": "cloud_and_shadow_masked_rgb",
-                        "title": "Simple RGB with cloud and cloud shadow masking",
-                        "abstract": "Simple true-colour image, using the red, green and blue bands, with cloud and cloud shadow masking",
-                        "components": {
-                            "red": {
-                                "red": 1.0
-                            },
-                            "green": {
-                                "green": 1.0
-                            },
-                            "blue": {
-                                "blue": 1.0
+                                    "cloud": False,
+                                }
                             }
-                        },
-                        # PQ masking example
-                        "pq_masks": [
-                            {
-                                "flags": {
-                                    "cloud_acca": "no_cloud",
-                                    "cloud_fmask": "no_cloud",
-                                    "cloud_shadow_acca": "no_cloud_shadow",
-                                    "cloud_shadow_fmask": "no_cloud_shadow",
-                                },
-                            },
                         ],
                         "scale_range": [6500.0,19000.0]
                     },
@@ -394,10 +368,9 @@ layer_cfg = [
                         "pq_masks": [
                             {
                                 "flags": {
-                                    "cloud_acca": "no_cloud",
-                                    "cloud_fmask": "no_cloud",
-                                 },
-                            },
+                                    "cloud": False,
+                                }
+                            }
                         ],
                     },
                     {
@@ -420,10 +393,9 @@ layer_cfg = [
                         "pq_masks": [
                             {
                                 "flags": {
-                                    "cloud_acca": "no_cloud",
-                                    "cloud_fmask": "no_cloud",
-                                },
-                            },
+                                    "cloud": False,
+                                }
+                            }
                         ],
                     },
                     {
@@ -455,32 +427,10 @@ layer_cfg = [
                         #      show pixels which are not clouds in both metrics.
                         "pq_masks": [
                             {
-                                "invert": True,
                                 "flags": {
-                                    "cloud_acca": "no_cloud",
-                                    "cloud_fmask": "no_cloud",
-                                },
-                            },
-                        ],
-                    },
-                    {
-                        "name": "cloud_and_shadow_mask",
-                        "title": "Cloud and Shadow Mask",
-                        "abstract": "Highlight pixels with cloud or cloud shadow.",
-                        "heat_mapped": True,
-                        "index_function": lambda data: data["red"] * 0.0 + 0.6,
-                        "needed_bands": ["red"],
-                        "range": [0.0, 1.0],
-                        "pq_masks": [
-                            {
-                                "invert": True,
-                                "flags": {
-                                    "cloud_acca": "no_cloud",
-                                    "cloud_fmask": "no_cloud",
-                                    "cloud_shadow_acca": "no_cloud_shadow",
-                                    "cloud_shadow_fmask": "no_cloud_shadow",
-                                },
-                            },
+                                    "cloud": False,
+                                }
+                            }
                         ],
                     },
                     {
@@ -494,9 +444,9 @@ layer_cfg = [
                         "pq_masks": [
                             {
                                 "flags": {
-                                    "cloud_acca": "cloud",
-                                },
-                            },
+                                    "cloud": True,
+                                }
+                            }
                         ],
                     },
                     {
@@ -579,10 +529,9 @@ layer_cfg = [
                         "pq_masks": [
                             {
                                 "flags": {
-                                    "cloud_acca": "no_cloud",
-                                    "cloud_fmask": "no_cloud",
-                                },
-                            },
+                                    "cloud": False,
+                                }
+                            }
                         ],
                         "scale_range": [6500.0,19000.0]
                     }
