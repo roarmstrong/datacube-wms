@@ -77,12 +77,12 @@ layer_cfg = [
                 # Included as a keyword  for the layer
                 "variant": "Level 1",
                 # The WMS name for the layer
-                "name": "ls8_level1_usgs",
+                "name": "ls8_level1_usgs_pds",
                 # The Datacube name for the associated data product
-                "product_name": "ls8_level1_usgs",
+                "product_name": "ls8_level1_usgs_pds",
                 # The Datacube name for the associated pixel-quality product (optional)
                 # The name of the associated Datacube pixel-quality product
-                "pq_dataset": "ls8_level1_usgs",
+                "pq_dataset": "ls8_level1_usgs_pds",
                 # The name of the measurement band for the pixel-quality product
                 # (Only required if pq_dataset is set)
                 "pq_manual_data_merge": True,
