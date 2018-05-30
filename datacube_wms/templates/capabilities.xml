@@ -151,15 +151,15 @@ http://schemas.opengis.net/wms/1.3.0/capabilities_1_3_0.xsd">
                     </EX_GeographicBoundingBox>
                     {% for crsid, bbox in product.ranges.bboxes.items() %}
                     <BoundingBox CRS="{{ crsid }}"
-                            {% if bbox.left < bbox.right %}
-                            minx="{{ bbox.left }}" maxx="{{ bbox.right }}"
-                            {% else %}
-                            minx="{{ bbox.right }}" maxx="{{ bbox.left }}"
-                            {% endif %}
                             {% if bbox.bottom < bbox.top %}
-                            miny="{{ bbox.bottom }}" maxy="{{ bbox.top }}"
+                            minx="{{ bbox.bottom }}" maxx="{{ bbox.top }}"
                             {% else %}
-                            miny="{{ bbox.top }}" maxy="{{ bbox.bottom }}"
+                            minx="{{ bbox.top }}" maxx="{{ bbox.bottom }}"
+                            {% endif %}
+                            {% if bbox.left < bbox.right %}
+                            miny="{{ bbox.left }}" maxy="{{ bbox.right }}"
+                            {% else %}
+                            miny="{{ bbox.right }}" maxy="{{ bbox.left }}"
                             {% endif %}
                     />
                     {% endfor %}

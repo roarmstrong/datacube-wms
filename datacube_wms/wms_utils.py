@@ -45,6 +45,10 @@ class WMSException(Exception):
         })
 
 
+def get_bbox_args(bbox):
+    miny, minx, maxy, maxx = map(float, bbox.split(','));
+    return miny, minx, maxy, maxx
+
 def wms_exception(e, traceback=[]):
     return render_template("wms_error.xml", exception=e, traceback=traceback), e.http_response, resp_headers(
         {"Content-Type": "application/xml"})
@@ -53,7 +57,7 @@ def wms_exception(e, traceback=[]):
 def _get_geobox(args, crs):
     width = int(args['width'])
     height = int(args['height'])
-    minx, miny, maxx, maxy = map(float, args['bbox'].split(','))
+    miny, minx, maxy, maxx = get_bbox_args(args['bbox'])
 
     # miny-maxy for negative scale factor and maxy in the translation, includes inversion of Y axis.
     affine = Affine.translation(minx, maxy) * Affine.scale((maxx - minx) / width, (miny - maxy) / height)
@@ -70,7 +74,7 @@ def zoom_factor(args, crs):
     # Extract request bbox and crs
     width = int(args['width'])
     height = int(args['height'])
-    minx, miny, maxx, maxy = map(float, args['bbox'].split(','))
+    miny, minx, maxy, maxx = get_bbox_args(args['bbox'])
     p1 = geometry.point(minx, maxy, crs)
     p2 = geometry.point(minx, miny, crs)
     p3 = geometry.point(maxx, maxy, crs)
